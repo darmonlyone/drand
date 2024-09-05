@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swap Text Example</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 48px;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 2px solid white;
+      border-radius: 10px;
+      background-color: transparent;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .text-end {
+      width: 100%;
+      text-align: end;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="text-container"></div>
+  <div class="text-end">Darm.</div>
+  <button onclick="onSwapText()">Swap</button>
+
+  <script>
+    const myText = "If you can read this, you are really, really smart. Some people might find it hard, but not you. You just showed how clever you are by understanding it. Your brain is like a puzzle solver, always finding the answers. Keep being amazing, because you have a mind that can do anything!";
+
+    document.getElementById('text-container').textContent = myText;
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const getRandomAlphabet = () => {
+      const alphabet = "abcdefghijklmnopqrstuvwxyz";
+      const randomIndex = Math.floor(Math.random() * alphabet.length);
+      return alphabet[randomIndex];
+    }
+
+    const swapText = (paragraph) => {
+      return paragraph.replaceAll(".", " ").replaceAll(",", "  ").split(" ").map((text) => {
+        if (text.length < 3) {
+          return text;
+        }
+
+        if (/\d/.test(text) || Math.random() > 0.9 || !(/^[a-zA-Z]+$/.test(text)) || /[A-Z].*[A-Z]/.test(text)) {
+          return text;
+        }
+
+        if (text.length === 4) {
+          if (Math.random() > 0.2) {
+            return `${text[0]}${text[2]}${text[1]}${text[3]}`;
+          }
+          return text;
+        }
+
+        const head = text[0];
+        const tail = text[text.length - 1];
+        const body = text.slice(1, -1);
+
+        const randBodyPosition = Array.from({ length: body.length }, (_, i) => i);
+
+        for (let i = randBodyPosition.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [randBodyPosition[i], randBodyPosition[j]] = [randBodyPosition[j], randBodyPosition[i]];
+        }
+
+        let newBody = "";
+        for (let i = 0; i < randBodyPosition.length; i++) {
+          newBody += body[randBodyPosition[i]];
+        }
+
+        return `${head}${newBody}${tail}`;
+      }).join(" ").replaceAll("   ", ", ").replaceAll("  ", ". ");
+    }
+
+    const onSwapText = async () => {
+      const intervalRange = myText.length / 10;
+      const swappedText = swapText(myText);
+
+      let toShowARandomText = swappedText;
+      for (let i = 0; i < intervalRange; i++) {
+        for (let j = 0; j < myText.length; j++) {
+          if (myText[j] === swappedText[j]) {
+            continue;
+          }
+
+          if (j === 0 || j + 1 === myText.length) {
+            continue;
+          }
+
+          if (myText[j - 1] === " " || myText[j + 1] === " " || myText[j] === " ") {
+            continue;
+          }
+
+          const randomAlphabet = getRandomAlphabet();
+          toShowARandomText = toShowARandomText.substring(0, j) + randomAlphabet + toShowARandomText.substring(j + 1);
+        }
+
+        let timeToSleep = i + 50;
+        if (timeToSleep > 100) {
+          timeToSleep = timeToSleep + (i / intervalRange);
+        }
+
+        await sleep(Math.floor(timeToSleep));
+        document.getElementById('text-container').textContent = toShowARandomText;
+
+        if (swappedText === toShowARandomText) {
+          break;
+        }
+      }
+
+      document.getElementById('text-container').textContent = swappedText;
+    }
+  </script>
+</body>
+
+</html>
